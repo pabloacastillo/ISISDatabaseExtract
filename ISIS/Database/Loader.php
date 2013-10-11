@@ -2,16 +2,42 @@
 
 namespace ISIS\Database;
 
+/**
+ *
+ */
 class Loader implements \ArrayAccess{
     
+    /**
+     * Extension of Master file
+     */
     const FILE_MST = 'mst';
+    
+    /**
+     * Extension of Crossreference file (Master file index)
+     */
     const FILE_XRF = 'xrf';
+    
+    /**
+     * Field Definition Table
+     */
     const FILE_FDT = 'fdt';
 
+    /**
+     * Path to database folder.
+     * @var string
+     */
     private $path;
 
+    /**
+     * Path to files by extension.
+     * @var array
+     */
     private $files;
     
+    /**
+     * fopen Resources for files into $files.
+     * @var type 
+     */
     private $resources;
 
     /**
@@ -38,7 +64,7 @@ class Loader implements \ArrayAccess{
             $this->scanFiles ();
         
         foreach ($this->files as $ext => $file) {
-            $this->resources[$ext] = fopen( $ext, 'rb');
+            $this->resources[$ext] = fopen( $file, 'rb');
             
             if ( !$this->resources[$ext]) {
                 throw new \ISIS\Exception\LoaderFileReadException($file);
@@ -67,36 +93,56 @@ class Loader implements \ArrayAccess{
             $matchs = array();
             if (preg_match( $ext_regex, $file, $matchs))
             {                
-                $files[ $matchs[1]] = $file;
+                $files[strtolower($matchs[1])] = $file;
             }
         }
 	        
         //verify loaded files
         foreach ($extensions as $extension) {
             if ( !isset($files[ $extension])){
-                throw new \ISIS\Exception\LoaderFileRequirementException($extension);
+                throw new \ISIS\Exception\LoaderFileRequirementException($extension, $this->path);
             }
         }
         
         $this->files = $files;
     }
     
+    /**
+     * Return a instance of Extract.
+     * @return \ISIS\Database\Extract
+     */
     public function extract() {
-        return new Extract($self);
+        return new Extract(self);
     }
 
+    /**
+     * Check if $offset exist in $resources.
+     * @param string $offset
+     * @return bool
+     */
     public function offsetExists($offset) {
         return (isset($this->resources[$offset]));
     }
 
+    /**
+     * Get a fopen resource for extension passed by $offset.
+     * @param string $offset
+     * @return fopen Resource
+     */
     public function offsetGet($offset) {
         return $this->resources[$offset];
     }
 
+    /**
+     * @ignore
+     */
     public function offsetSet($offset, $value) {
         throw new \OutOfRangeException();
     }
 
+    /**
+     * @ignore
+     */
     public function offsetUnset($offset) {
         throw new \BadMethodCallException();
     }

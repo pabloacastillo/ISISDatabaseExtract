@@ -4,14 +4,32 @@ namespace ISIS\Database;
 
 class Extract implements \Countable, \Iterator {
     
+    /**
+     * Loader instance.
+     * @var Loader
+     */
     private $res;
 
+    /**
+     * Count of records in DB.
+     * @var integer
+     */
     private $count;
 
+    /**
+     * Standad Subfield seperator in CDS/ISIS
+     */
     const ISIS_SUBFIELD_DELIMITER = '^';
     
-    /** PROPIOS */
+    /**
+     * Key for field indicator in array.
+     * @see fetch()
+     */
     const RECORDEXTRACT_SUBFIELD_IND1 = 'i1';
+    
+    /**
+     * @see RECORDEXTRACT_SUBFIELD_IND1
+     */
     const RECORDEXTRACT_SUBFIELD_IND2 = 'i2';    
     
     
@@ -32,6 +50,12 @@ class Extract implements \Countable, \Iterator {
         $this->count = array_shift($unpacked);                
     }
     
+    /**
+     * Fetch a record by $mfn (Master File Number)
+     * @param integer $mfn
+     * @return mixed Return array of data grouped by fields or Null for empty record or error.
+     * @throws \ISIS\Exception\ExtractDataNVFBASEException
+     */
     public function fetch( $mfn) {
         $buffer = null;
         $mfnpos = ($mfn + intval(($mfn-1)/127))*4;
@@ -172,7 +196,7 @@ class Extract implements \Countable, \Iterator {
         {    
             $matchs = array();
             
-            preg_match_all('#\^([a-zA-Z0-9][^\^]+)#i', $f, $matchs);
+            preg_match_all('#\\'.self::ISIS_SUBFIELD_DELIMITER.'([a-zA-Z0-9][^\\'.self::ISIS_SUBFIELD_DELIMITER.']+)#i', $f, $matchs);
 
             if ( count($matchs) != 2) 
                 return null;                        
@@ -185,7 +209,7 @@ class Extract implements \Countable, \Iterator {
             }
             
             //$_sfs = explode(self::ISIS_SUBFIELD_DELIMITER, $f);
-            foreach ( $matchs[1] as $k=>$v) {
+            foreach ( $matchs[1] as $v) {
                 
                 if ( isset($subfield[strtolower(substr($v,0,1))])) { //repetidos
                     if ( !is_array($subfield[strtolower(substr($v,0,1))]))
@@ -254,11 +278,10 @@ class Extract implements \Countable, \Iterator {
     }
     
     public function count() {
-        return $this->NXTMFN-1;
+        return $this->count-1;
     }
 
     protected $current = 1;
-
 
     public function current() {
         return $this->fetch($this->key());

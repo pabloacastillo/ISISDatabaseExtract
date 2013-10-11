@@ -1,0 +1,25 @@
+=Author
+==Perl Version
+This package is adaptation to PHP from Biblio::Isis written in Perl by:
+
+	Dobrica Pavlinusic
+	CPAN ID: DPAVLIN
+	dpavlin@rot13.org
+	http://www.rot13.org/~dpavlin/
+
+==PHP Version
+
+        Carlos Sosa
+        http://github.com/carlossosa/
+
+=Description
+
+This class will read ISIS databases created by CDS/ISIS, WinIsis or
+IsisMarc. It can create array values from data in ISIS database.
+
+It will also skip zero sized fields (OpenIsis has a bug in XS bindings, so
+fields which are zero sized will be filled with random junk from memory).
+
+This module will always be slower than OpenIsis module which use C
+library. However, it's platform independent and you don't need C compiler,
+and can be easily modified. 
