@@ -83,6 +83,7 @@ class Loader implements \ArrayAccess{
             //TODO: Fields declaration file  'FDT',
             self::FILE_MST,
             self::FILE_XRF,
+            self::FILE_FDT
         );
         
         $ext_regex = '/\.(' . implode('|', $extensions) . ')$/i';
