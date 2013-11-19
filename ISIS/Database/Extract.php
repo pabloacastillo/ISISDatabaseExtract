@@ -9,6 +9,7 @@ class Extract implements \Countable, \Iterator {
      * @var Loader
      */
     private $res;
+    public $definitions=array();
 
     /**
      * Count of records in DB.
@@ -47,7 +48,9 @@ class Extract implements \Countable, \Iterator {
         fseek( $this->res[Loader::FILE_MST], 4, 0);
         $buffer = fread( $this->res[Loader::FILE_MST], 4);
         $unpacked = unpack('V', $buffer);
-        $this->count = array_shift($unpacked);                
+        $this->count = array_shift($unpacked); 
+
+        $this->fdt_definitions;               
     }
     
     /**
@@ -161,7 +164,7 @@ class Extract implements \Countable, \Iterator {
                     
                    
                     $data[$FieldTAG[$i]][] = $extracted;
- 
+                    
                 }                                
                 
                 $last_tag = $FieldTAG[$i];
@@ -302,4 +305,31 @@ class Extract implements \Countable, \Iterator {
     public function valid() {
         return ( $this->current < $this->count());
     }
+
+
+    public function fdt_definitions(){
+
+        $flag=false;
+        while (($bufer = fgets($this->res[Loader::FILE_FDT])) !== false) {
+            if($flag){
+
+                // FROM THE PERL FILE
+                // http://www.dil.iitb.ac.in/gsdl/perllib/plugins/ISISPlug.pm 
+                // sub parse_field_definition_table
+
+                $cad['name']=trim(substr($bufer, 0,30));
+                $cad['subfields']=trim(substr($bufer, 30,20));
+                $cad['fieldspecs']=trim(substr($bufer, 50,20));
+                preg_match_all("(\d+)", $cad['fieldspecs'], $cad['fieldspecs']);
+                $cad['fieldspecs']=$cad['fieldspecs'][0];
+                $this->definitions[$cad['fieldspecs'][0]]=$cad;
+               // print_r($cad);
+            }
+            
+            if(trim($bufer)=='***'){
+                $flag=true;
+            }
+        }
+    }
+
 }
